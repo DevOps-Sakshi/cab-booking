@@ -7,12 +7,6 @@ pipeline {
 
     stages {
 
-        stage('Clone Code') {
-            steps {
-                git 'https://github.com/DevOps-Sakshi/cab-booking.git'
-            }
-        }
-
         stage('Build') {
             steps {
                 sh 'mvn clean package'
@@ -29,7 +23,7 @@ pipeline {
             steps {
                 sh 'docker stop cab-app || true'
                 sh 'docker rm cab-app || true'
-                sh 'docker run -d -p 8080:8080 --name cab-app cabbooking-app'
+                sh 'docker run -d -p 9090:8080 --name cab-app cabbooking-app'
             }
         }
     }
