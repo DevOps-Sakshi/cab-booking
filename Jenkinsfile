@@ -24,7 +24,7 @@ pipeline {
             -Dsonar.projectKey=ci-cd \
             -Dsonar.projectName=CI-CD \
             -Dsonar.token=sqa_55c72143589b82b205641ffcdaecce4670686dae
-            -Dsonar.sources=server/src/main/java,taxi-booking/src/main/webapp
+            -Dsonar.exclusions=taxi-booking/src/main/webapp/**
             '''
         }
     }
