@@ -15,16 +15,15 @@ pipeline {
         }
 
 
-        stage('SonarQube Analysis') {
+        stage('Build + SonarQube Analysis') {
     steps {
         withSonarQubeEnv('sonar') {
             sh '''
-            mvn clean verify sonar:sonar \
+            export SONAR_SCANNER_OPTS="-Xmx512m"
+            mvn clean package sonar:sonar \
             -Dsonar.projectKey=ci-cd \
             -Dsonar.projectName=CI-CD \
-            -Dsonar.host.url=http://localhost:9000 \
-            -Dsonar.login=$SONAR_TOKEN /
-            -Dsonar.sources=src
+            -Dsonar.token=your_token_here
             '''
         }
     }
