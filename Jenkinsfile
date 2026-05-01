@@ -20,7 +20,7 @@ pipeline {
         withSonarQubeEnv('sonar') {
             sh '''
             export SONAR_SCANNER_OPTS="-Xmx2048m"
-            vn clean package sonar:sonar \
+            mvn clean package sonar:sonar \
             -Dsonar.projectKey=ci-cd \
             -Dsonar.projectName=CI-CD \
             -Dsonar.token=$SONAR_TOKEN \
