@@ -19,12 +19,13 @@ pipeline {
     steps {
         withSonarQubeEnv('sonar') {
             sh '''
-            export SONAR_SCANNER_OPTS="-Xmx512m"
-            mvn clean package sonar:sonar \
+            export SONAR_SCANNER_OPTS="-Xmx2048m"
+            vn clean package sonar:sonar \
             -Dsonar.projectKey=ci-cd \
             -Dsonar.projectName=CI-CD \
-            -Dsonar.token=sqa_55c72143589b82b205641ffcdaecce4670686dae
-            -Dsonar.exclusions=taxi-booking/src/main/webapp/**
+            -Dsonar.token=$SONAR_TOKEN \
+            -Dsonar.exclusions=taxi-booking/src/main/webapp/** \
+            -Dsonar.javascript.detectBundles=false
             '''
         }
     }
