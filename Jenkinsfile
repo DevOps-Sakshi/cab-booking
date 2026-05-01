@@ -23,7 +23,7 @@ pipeline {
             mvn clean package sonar:sonar \
             -Dsonar.projectKey=ci-cd \
             -Dsonar.projectName=CI-CD \
-            -Dsonar.token=your_token_here
+            -Dsonar.token=$SONAR_TOKEN
             '''
         }
     }
