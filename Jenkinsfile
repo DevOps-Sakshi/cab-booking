@@ -3,15 +3,37 @@ pipeline {
 
     tools {
         maven 'Maven'
+        jdk 'java'
     }
 
     stages {
 
-        stage('Build') {
+        stage('Clone Code') {
+            steps {
+                git 'https://github.com/DevOps-Sakshi/cab-booking.git'
+            }
+        }
+
+        stage('Build with Maven') {
             steps {
                 sh 'mvn clean package'
             }
-        }    
-        
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'sudo docker build -t ci-cd-app .'
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                sh '''
+                sudo docker stop ci-cd-app || true
+                sudo docker rm ci-cd-app || true
+                sudo docker run -d -p 8082:8080 --name ci-cd-app ci-cd-app
+                '''
+            }
+        }
     }
 }
