@@ -23,7 +23,7 @@ pipeline {
             mvn clean package sonar:sonar \
             -Dsonar.projectKey=ci-cd \
             -Dsonar.projectName=CI-CD \
-            -Dsonar.token=$SONAR_TOKEN \
+            -Dsonar.token=sqa_8fcf3f95d7df73ed2d1d964a4122ab4df75e6965 \
             -Dsonar.exclusions=taxi-booking/src/main/webapp/** \
             -Dsonar.javascript.detectBundles=false
             '''
