@@ -66,13 +66,21 @@ pipeline {
         
 
         stage('Run Docker Container') {
-            steps {
-                sh '''
-                sudo docker stop ci-cd-app || true
-                sudo docker rm ci-cd-app || true
-                sudo docker run -d -p 8082:8080 --name ci-cd-app ci-cd-app
-                '''
-            }
+    steps {
+        withCredentials([usernamePassword(
+            credentialsId: 'dockerhub-creds',
+            usernameVariable: 'DOCKER_USER',
+            passwordVariable: 'DOCKER_PASS'
+        )]) {
+            sh '''
+            sudo docker stop ci-cd-app || true
+            sudo docker rm ci-cd-app || true
+            sudo docker pull $DOCKER_USER/ci-cd-app:latest
+            sudo docker run -d -p 8082:8080 --name ci-cd-app $DOCKER_USER/ci-cd-app:latest
+            '''
         }
+      }
+     }
+        
     }
 }
