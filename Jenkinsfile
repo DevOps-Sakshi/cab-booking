@@ -46,6 +46,25 @@ pipeline {
             }
         }
 
+
+        stage('Push to DockerHub') {
+    steps {
+        withCredentials([usernamePassword(
+            credentialsId: 'dockerhub-creds',
+            usernameVariable: 'DOCKER_USER',
+            passwordVariable: 'DOCKER_PASS'
+        )]) {
+            sh '''
+            echo "$DOCKER_PASS" | sudo docker login -u "$DOCKER_USER" --password-stdin
+            sudo docker tag ci-cd-app $DOCKER_USER/ci-cd-app:latest
+            sudo docker push $DOCKER_USER/ci-cd-app:latest
+            '''
+        }
+    }
+}
+
+        
+
         stage('Run Docker Container') {
             steps {
                 sh '''
