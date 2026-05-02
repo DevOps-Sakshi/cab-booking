@@ -47,14 +47,19 @@ pipeline {
         }
 
 
-        stage('Trivy Scan') {
+        
+        stage('Trivy Image Scan') {
     steps {
         sh '''
-        /usr/local/bin/trivy image --format table -o trivy-report.txt ci-cd-app
+        /usr/local/bin/trivy image \
+        --severity HIGH,CRITICAL \
+        --exit-code 1 \
+        --format table \
+        -o trivy-report.txt \
+        ci-cd-app
         '''
     }
 }
-        
 
 
         stage('Push to DockerHub') {
@@ -92,5 +97,11 @@ pipeline {
       }
      }
         
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'trivy-report.txt', fingerprint: true
+        }
     }
 }
