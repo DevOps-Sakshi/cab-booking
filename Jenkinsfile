@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        DOCKER_IMAGE = "yourdockerhubusername/cicd-app"
+        DOCKER_IMAGE = "sakshi1713/cicd-app"
         DOCKER_TAG = "latest"
     }
 
@@ -14,7 +14,7 @@ pipeline {
 
         stage('Checkout Code') {
             steps {
-                git 'https://github.com/your-repo/cicd-app.git'
+                git branch: 'main', url: 'https://github.com/DevOps-Sakshi/cab-booking.git'
             }
         }
 
