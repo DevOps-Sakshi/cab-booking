@@ -80,15 +80,15 @@ pipeline {
 
 
         stage('Deploy using Ansible') {
-            steps {
-                withCredentials([string(credentialsId: 'dockerhub-password', variable: 'DOCKER_PASS')]) {
-                    sh """
-                    ansible-playbook -i ansible/hosts ansible/deploy.yml \
-                    --extra-vars "docker_password=$DOCKER_PASS"
-                    """
-                }
-            }
+    steps {
+        withCredentials([string(credentialsId: 'dockerhub-password', variable: 'DOCKER_PASS')]) {
+            sh '''
+            ansible-playbook -i ansible/hosts ansible/deploy.yml \
+            --extra-vars "docker_password=$DOCKER_PASS"
+            '''
         }
+    }
+}
         
     }
 
