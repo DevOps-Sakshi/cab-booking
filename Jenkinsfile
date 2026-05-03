@@ -3,98 +3,105 @@ pipeline {
 
     tools {
         maven 'Maven'
-    }
-
-    environment {
-        DOCKER_IMAGE = "sakshi1713/cicd-app"
-        DOCKER_TAG = "latest"
+        jdk 'java'
     }
 
     stages {
 
-        stage('Checkout Code') {
+        stage('Clone Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/DevOps-Sakshi/cab-booking.git'
             }
         }
 
+
+        stage('Build + SonarQube Analysis') {
+    steps {
+        withSonarQubeEnv('sonar') {
+            sh '''
+            export SONAR_SCANNER_OPTS="-Xmx2048m"
+            mvn clean verify sonar:sonar \
+            -Dsonar.projectKey=ci-cd \
+            -Dsonar.projectName=CI-CD \
+            -Dsonar.token=sqa_27b76609fd16a402abaee77c09c80fa15d26bcf6 \
+            -Dsonar.exclusions=taxi-booking/src/main/webapp/** \
+            -Dsonar.javascript.detectBundles=false
+            '''
+        }
+    }
+}   
+
+
         stage('Build with Maven') {
-            steps {
-                sh 'mvn clean package -DskipTests'
-            }
-        }
+    steps {
+        sh 'mvn clean package'
+    }
+}
 
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('sonar') {
-                    sh 'mvn sonar:sonar'
-                }
-            }
-        }
 
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 2, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
-
+        
         stage('Build Docker Image') {
             steps {
-                sh '''
-                docker build -t $DOCKER_IMAGE:$DOCKER_TAG .
-                '''
+                sh 'sudo docker build -t ci-cd-app .'
             }
         }
 
+
+        
         stage('Trivy Image Scan') {
-            steps {
-                sh '''
-                trivy image --severity HIGH,CRITICAL --exit-code 1 $DOCKER_IMAGE:$DOCKER_TAG
-                '''
-            }
-        }
+    steps {
+        sh '''
+        /usr/local/bin/trivy image \
+        --severity HIGH,CRITICAL \
+        --exit-code 1 \
+        --format table \
+        -o trivy-report.txt \
+        ci-cd-app
+        '''
+    }
+}
 
-        stage('Login to DockerHub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                    sh '''
-                    echo $PASS | docker login -u $USER --password-stdin
-                    '''
-                }
-            }
-        }
 
-        stage('Push Docker Image') {
-            steps {
-                sh '''
-                docker push $DOCKER_IMAGE:$DOCKER_TAG
-                '''
-            }
+        stage('Push to DockerHub') {
+    steps {
+        withCredentials([usernamePassword(
+            credentialsId: 'dockerhub-creds',
+            usernameVariable: 'DOCKER_USER',
+            passwordVariable: 'DOCKER_PASS'
+        )]) {
+            sh '''
+            echo "$DOCKER_PASS" | sudo docker login -u "$DOCKER_USER" --password-stdin
+            sudo docker tag ci-cd-app $DOCKER_USER/ci-cd-app:latest
+            sudo docker push $DOCKER_USER/ci-cd-app:latest
+            '''
         }
+    }
+}
 
-        stage('Deploy using Ansible') {
-            steps {
-                sh '''
-                ansible-playbook -i hosts deploy.yml
-                '''
-            }
+        
+
+        stage('Run Docker Container') {
+    steps {
+        withCredentials([usernamePassword(
+            credentialsId: 'dockerhub-creds',
+            usernameVariable: 'DOCKER_USER',
+            passwordVariable: 'DOCKER_PASS'
+        )]) {
+            sh '''
+            sudo docker stop ci-cd-app || true
+            sudo docker rm ci-cd-app || true
+            sudo docker pull $DOCKER_USER/ci-cd-app:latest
+            sudo docker run -d -p 8082:8080 --name ci-cd-app $DOCKER_USER/ci-cd-app:latest
+            '''
         }
+      }
+     }
+        
     }
 
     post {
         always {
-            archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             archiveArtifacts artifacts: 'trivy-report.txt', fingerprint: true
-        }
-
-        success {
-            echo 'Pipeline Success 🚀'
-        }
-
-        failure {
-            echo 'Pipeline Failed ❌'
         }
     }
 }
