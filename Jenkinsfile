@@ -99,6 +99,12 @@ pipeline {
         
     }
 
+    stage('Deploy using Ansible') {
+    steps {
+        sh 'ansible-playbook -i ansible/hosts ansible/deploy.yml'
+    }
+}
+
     post {
         always {
             archiveArtifacts artifacts: 'trivy-report.txt', fingerprint: true
