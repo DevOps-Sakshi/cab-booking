@@ -1,0 +1,20 @@
+---
+
+- name: Docker login
+  docker_login:
+    username: sakshi1713
+    password: "{{ docker_password }}"
+
+- name: Pull image
+  docker_image:
+    name: sakshi1713/cicd-app
+    tag: latest
+    source: pull
+
+- name: Run container
+  docker_container:
+    name: cicd-app
+    image: sakshi1713/cicd-app:latest
+    state: started
+    ports:
+      - "8080:8080"
