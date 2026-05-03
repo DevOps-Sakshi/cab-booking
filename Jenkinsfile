@@ -77,11 +77,18 @@ pipeline {
         }
     }
 }
+
+
         stage('Deploy using Ansible') {
-    steps {
-        sh 'ansible-playbook -i ansible/hosts ansible/deploy.yml'
-    }
-}
+            steps {
+                withCredentials([string(credentialsId: 'dockerhub-password', variable: 'DOCKER_PASS')]) {
+                    sh """
+                    ansible-playbook -i ansible/hosts ansible/deploy.yml \
+                    --extra-vars "docker_password=$DOCKER_PASS"
+                    """
+                }
+            }
+        }
         
     }
 
