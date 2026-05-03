@@ -1,15 +1,23 @@
----
+- name: Deploy Docker Application
+  hosts: web
+  become: true
 
-- name: Pull image
-  docker_image:
-    name: sakshi1713/ci-cd-app
-    tag: latest
-    source: pull
+  tasks:
 
-- name: Run container
-  docker_container:
-    name: cicd-app
-    image: sakshi1713/ci-cd-app:latest
-    state: started
-    ports:
-      - "8080:8080"
+    - name: Pull Docker image
+      docker_image:
+        name: sakshi1713/ci-cd-app
+        tag: latest
+        source: pull
+
+    - name: Run container
+      docker_container:
+        name: cicd-app
+        image: sakshi1713/ci-cd-app:latest
+        state: started
+        restart_policy: always
+        ports:
+          - "8080:8080"
+~
+~
+~
